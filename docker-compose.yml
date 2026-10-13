@@ -1,0 +1,21 @@
+# Runs ONLY the frontend. The backend lives in its own repository (hotel-mvp-backend);
+# start it first (`make up` there) so http://localhost:8000 answers.
+#   docker compose up --build
+name: hotel-mvp-frontend
+
+services:
+  web:
+    build: .
+    image: hotel-mvp/frontend:dev
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    environment:
+      # Server-side calls to the REST API. From a container, the host's published
+      # backend port is reachable through host.docker.internal.
+      API_BASE_URL: ${API_BASE_URL:-http://host.docker.internal:8000}
+      # Opened by the BROWSER, so it must be the address as seen from the user's machine.
+      WS_URL: ${WS_URL:-ws://localhost:8000/ws/events}
+      HOTEL_TIMEZONE: ${HOTEL_TIMEZONE:-UTC}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
